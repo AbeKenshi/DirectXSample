@@ -5,6 +5,7 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 bool CreateMainWindow(HINSTANCE, int);
 LRESULT WINAPI WinProc(HWND, UINT, WPARAM, LPARAM);
+bool AnotherInstance();
 
 // グローバル変数
 HINSTANCE hinst;
@@ -29,6 +30,11 @@ const int WINDOW_HEIGHT = 400; // ウィンドウの高さ
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	MSG msg;
+
+	// 複数のインスタンスの生成を防ぐ
+	if (AnotherInstance())
+		return false;
+
 	// ウィンドウを作成
 	if (!CreateMainWindow(hInstance, nCmdShow))
 		return false;
@@ -221,4 +227,19 @@ bool CreateMainWindow(HINSTANCE hInstance, int nCmdShow)
 	// ウィンドウプロシージャにWM_PAINTメッセージを送る
 	UpdateWindow(hwnd);
 	return true;
+}
+
+// 現在のアプリケーションの別のインスタンスがないかをチェック
+// 戻り値：別のインスタンスが見つかった場合、true
+//		　 自身が唯一のインスタンスである場合、false
+bool AnotherInstance()
+{
+	HANDLE ourMutex;
+
+	// 固有の文字列を使ってミューテックスの作成を試みる
+	ourMutex = CreateMutex(NULL, true,
+		"MUTEX");
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+		return true;	// 別のインスタンスが見つかった場合
+	return false;		// 自身が唯一のインスタンスである場合
 }
