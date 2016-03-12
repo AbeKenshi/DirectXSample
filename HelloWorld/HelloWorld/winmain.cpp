@@ -1,15 +1,19 @@
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
+
 // 関数プロトタイプ
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 bool CreateMainWindow(HINSTANCE, int);
 LRESULT WINAPI WinProc(HWND, UINT, WPARAM, LPARAM);
+
 // グローバル変数
 HINSTANCE hinst;
 HDC hdc;			// デバイスコンテキストへのハンドル
 TCHAR ch = ' ';		// 入力された文字	
 RECT rect;			// Rectangle構造体
 PAINTSTRUCT ps;		// WM_PAINTで使用される
+bool vkKeys[256];	// 仮想キーの状態、trueかfalse
+
 // 定数
 const char CLASS_NAME[] = "WinMain";
 const char APP_TITLE[] = "Hello World"; // タイトルバーのテキスト
@@ -28,6 +32,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 	// ウィンドウを作成
 	if (!CreateMainWindow(hInstance, nCmdShow))
 		return false;
+
+	for (int i = 0; i < 256; ++i)	// 仮想キーの配列の初期化
+	{
+		vkKeys[i] = false;
+	}
+
 	// メインのメッセージループ
 	int done = 0;
 	while (!done)
@@ -49,8 +59,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 // ウィンドウイベントコールバック関数
 LRESULT WINAPI WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	short nVirtKey;								// 仮想キーコード
+	const short SHIFTED = (short)0x8000;
+	TEXTMETRIC tm;
+	DWORD chWidth = 20;							// 文字の幅
+	DWORD chHeight = 20;						// 文字の高さ
+
 	switch (msg)
 	{
+	case WM_CREATE:
+		// text metricsを取得
+		hdc = GetDC(hWnd);
+		GetTextMetrics(hdc, &tm);
+		ReleaseDC(hWnd, hdc);
+		chWidth = tm.tmAveCharWidth;
+		chHeight = tm.tmHeight;
+		return 0;
+
+	case WM_DESTROY:
+		// Windowsにプログラムを終了するように伝える
+		PostQuitMessage(0);
+		return 0;
+
 	case WM_CHAR:								// キーボードから文字が入力された場合
 		switch (wParam)							// 文字はwParamに格納されている
 		{
@@ -59,26 +89,90 @@ LRESULT WINAPI WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case 0x0A:								// ラインフィード
 		case 0x0D:								// キャリッジリターン
 		case 0x1B:								// エスケープ
-			MessageBeep((UINT)-1);				// ビープ音を鳴らす、表示はしない
 			return 0;
 		default:								// 表示可能な文字
 			ch = (TCHAR)wParam;					// 文字を取得
 			InvalidateRect(hWnd, NULL, TRUE);	// WM_PAINTを強制的に発生させる
 			return 0;
 		}
+
+	case WM_KEYDOWN:							// キーが押された場合
+		vkKeys[wParam] = true;
+		switch (wParam)
+		{
+			case VK_SHIFT:							// Shiftキー
+				nVirtKey = GetKeyState(VK_LSHIFT);	// 左Shiftキーの状態を取得
+				if (nVirtKey & SHIFTED)				// 左Shiftキーの場合
+					vkKeys[VK_LSHIFT] = true;
+				nVirtKey = GetKeyState(VK_RSHIFT);	// 右Shiftキーの状態を取得
+				if (nVirtKey & SHIFTED)				// 右Shiftキーの場合
+					vkKeys[VK_RSHIFT] = true;
+				break;
+			case VK_CONTROL:						// Ctrlキー
+				nVirtKey = GetKeyState(VK_LCONTROL);
+				if (nVirtKey & SHIFTED)			// 左Ctrlキーの場合
+					vkKeys[VK_LCONTROL] = true;
+				nVirtKey = GetKeyState(VK_RCONTROL);
+				if (nVirtKey & SHIFTED)			// 左Ctrlキーの場合
+					vkKeys[VK_RCONTROL] = true;
+				break;
+		}
+		InvalidateRect(hWnd, NULL, TRUE);			// WM_PAINTを強制的に発生させる
+		return 0;
+		break;
+
+	case WM_KEYUP:									// キーが離された場合
+		vkKeys[wParam] = false;
+		switch (wParam)
+		{
+		case VK_SHIFT:							// Shiftキー
+			nVirtKey = GetKeyState(VK_LSHIFT);	// 左Shiftキーの状態を取得
+			if ((nVirtKey & SHIFTED) == 0)				// 左Shiftキーの場合
+				vkKeys[VK_LSHIFT] = false;
+			nVirtKey = GetKeyState(VK_RSHIFT);	// 右Shiftキーの状態を取得
+			if ((nVirtKey & SHIFTED) == 0)				// 右Shiftキーの場合
+				vkKeys[VK_RSHIFT] = false;
+			break;
+		case VK_CONTROL:						// Ctrlキー
+			nVirtKey = GetKeyState(VK_LCONTROL);
+			if ((nVirtKey & SHIFTED) == 0)			// 左Ctrlキーの場合
+				vkKeys[VK_LCONTROL] = false;
+			nVirtKey = GetKeyState(VK_RCONTROL);
+			if ((nVirtKey & SHIFTED) == 0)			// 左Ctrlキーの場合
+				vkKeys[VK_RCONTROL] = false;
+			break;
+		}
+		InvalidateRect(hWnd, NULL, TRUE);			// WM_PAINTを強制的に発生させる
+		return 0;
+		break;
+
 	case WM_PAINT:								// ウィンドウを再描画する必要がある場合
 		hdc = BeginPaint(hWnd, &ps);			// デバイスコンテキストへのハンドルを取得
-		GetClientRect(hWnd, &rect);				// ウィンドウの矩形を取得
-		// 文字を表示
-		TextOut(hdc, rect.right / 2, rect.bottom / 2, &ch, 1);
+		TextOut(hdc, 0, 0, &ch, 1);				// 文字を表示
+
+		// vkKeys配列の状態を表示
+		// キーが押されていればTを表示、押されていなければFを表示
+		for (int r = 0; r < 16; ++r)
+		{
+			for (int c = 0; c < 16; ++c)
+			{
+				if (vkKeys[r * 16 + c])
+				{
+					SetBkMode(hdc, OPAQUE);		// 文字の背景を不透明にする
+					TextOut(hdc, c * chWidth + chWidth * 2, r * chHeight + chHeight * 2, "T ", 2);
+				} else {
+					SetBkMode(hdc, TRANSPARENT);// 文字の背景を透明にする
+					TextOut(hdc, c * chWidth + chWidth * 2, r * chHeight + chHeight * 2, "F ", 2);
+				}
+			}
+		}
+
 		EndPaint(hWnd, &ps);
 		return 0;
-	case WM_DESTROY:
-		// Windowsにこのプログラムを終了するように伝える
-		PostQuitMessage(0);
-		return 0;
+
+	default:
+		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 // ウィンドウを作成
@@ -87,6 +181,7 @@ bool CreateMainWindow(HINSTANCE hInstance, int nCmdShow)
 {
 	WNDCLASSEX wcx;
 	HWND hwnd;
+
 	// ウィンドウクラスの構造体をメインウィンドウを記述するパラメータで設定します。
 	wcx.cbSize = sizeof(wcx);					// 構造体のサイズ
 	wcx.style = CS_HREDRAW | CS_VREDRAW;		// ウィンドウサイズ変更時に再描画
@@ -97,7 +192,7 @@ bool CreateMainWindow(HINSTANCE hInstance, int nCmdShow)
 	wcx.hIcon = NULL;
 	wcx.hCursor = LoadCursor(NULL, IDC_ARROW);	// 事前定義されている矢印カーソル
 	wcx.hbrBackground =							// 背景ブラシ
-		(HBRUSH)GetStockObject(BLACK_BRUSH);
+		(HBRUSH)GetStockObject(GRAY_BRUSH);
 	wcx.lpszMenuName = NULL;					// メニューリソースの名前
 	wcx.lpszClassName = CLASS_NAME;				// ウィンドウクラスの名前
 	wcx.hIconSm = NULL;
