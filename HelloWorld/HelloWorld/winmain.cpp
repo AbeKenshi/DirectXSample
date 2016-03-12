@@ -6,6 +6,10 @@ bool CreateMainWindow(HINSTANCE, int);
 LRESULT WINAPI WinProc(HWND, UINT, WPARAM, LPARAM);
 // グローバル変数
 HINSTANCE hinst;
+HDC hdc;			// デバイスコンテキストへのハンドル
+TCHAR ch = ' ';		// 入力された文字	
+RECT rect;			// Rectangle構造体
+PAINTSTRUCT ps;		// WM_PAINTで使用される
 // 定数
 const char CLASS_NAME[] = "WinMain";
 const char APP_TITLE[] = "Hello World"; // タイトルバーのテキスト
@@ -47,6 +51,28 @@ LRESULT WINAPI WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_CHAR:								// キーボードから文字が入力された場合
+		switch (wParam)							// 文字はwParamに格納されている
+		{
+		case 0x08:								// バックスペース
+		case 0x09:								// タブ
+		case 0x0A:								// ラインフィード
+		case 0x0D:								// キャリッジリターン
+		case 0x1B:								// エスケープ
+			MessageBeep((UINT)-1);				// ビープ音を鳴らす、表示はしない
+			return 0;
+		default:								// 表示可能な文字
+			ch = (TCHAR)wParam;					// 文字を取得
+			InvalidateRect(hWnd, NULL, TRUE);	// WM_PAINTを強制的に発生させる
+			return 0;
+		}
+	case WM_PAINT:								// ウィンドウを再描画する必要がある場合
+		hdc = BeginPaint(hWnd, &ps);			// デバイスコンテキストへのハンドルを取得
+		GetClientRect(hWnd, &rect);				// ウィンドウの矩形を取得
+		// 文字を表示
+		TextOut(hdc, rect.right / 2, rect.bottom / 2, &ch, 1);
+		EndPaint(hWnd, &ps);
+		return 0;
 	case WM_DESTROY:
 		// Windowsにこのプログラムを終了するように伝える
 		PostQuitMessage(0);
