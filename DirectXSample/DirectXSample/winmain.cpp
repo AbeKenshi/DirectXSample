@@ -4,7 +4,7 @@
 #include "windows.h"
 #include <stdlib.h>			// メモリリークを検出するため
 #include <crtdbg.h>			// メモリリークを検出するため
-#include "graphics.h"
+#include "spacewar.h"
 
 // 関数プロトタイプ
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
@@ -12,11 +12,9 @@ bool CreateMainWindow(HWND &, HINSTANCE, int);
 LRESULT WINAPI WinProc(HWND, UINT, WPARAM, LPARAM);
 bool AnotherInstance();
 
-// グローバル変数
-HINSTANCE hinst;
-
-// Graphicsポインタ
-Graphics *graphics;
+// Gameポインタ
+Spacewar *game = NULL;
+HWND hwnd = NULL;
 
 // Windowsアプリケーションの開始点
 // パラメータ
@@ -32,7 +30,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 	#endif
 
 	MSG msg;
-	HWND hwnd = NULL;
+
+	// Create the game, sets up message handler
+	game = new Spacewar;
 
 	// 複数のインスタンスの生成を防ぐ
 	if (AnotherInstance())
@@ -41,11 +41,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 	// ウィンドウを作成
 	if (!CreateMainWindow(hwnd, hInstance, nCmdShow))
 		return 1;
+
 	try {
-		// Graphicsオブジェクトを作成
-		graphics = new Graphics;
-		// Graphicsを初期化、GameErrorをスロー
-		graphics->initialize(hwnd, GAME_WIDTH, GAME_HEIGHT, FULLSCREEN);
+		game->initialize(hwnd);
 
 		// メインのメッセージループ
 		int done = 0;
@@ -62,44 +60,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 				DispatchMessage(&msg);
 			}
 			else
-				graphics->showBackbuffer();
+				game->run(hwnd);	// ゲームループを実行
 		}
-		SAFE_DELETE(graphics);	// 終了の前にメモリを開放
+		SAFE_DELETE(game);	// 終了の前にメモリを開放
 		return msg.wParam;
 	}
 	catch (const GameError &err)
 	{
+		game->deleteAll();
+		DestroyWindow(hwnd);
 		MessageBox(NULL, err.getMessage(), "Error", MB_OK);
 	}
 	catch (...)
 	{
-		MessageBox(NULL, "Unknown error occured in game.", "Error", MB_OK);
+		game->deleteAll();
+		DestroyWindow(hwnd);
+		MessageBox(NULL, "Unknown error occured in game", "Error", MB_OK);
 	}
-	SAFE_DELETE(graphics);	// 終了の前にメモリを開放
+	SAFE_DELETE(game);	// 終了の前にメモリを開放
 	return 0;
 }
 
 // ウィンドウイベントコールバック関数
 LRESULT WINAPI WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
-	case WM_DESTROY:
-		// windowsにプログラムを終了するように伝える
-		PostQuitMessage(0);
-		return 0;
-	case WM_CHAR:		// キーボードから文字が入力された場合
-		switch (wParam)	// 文字はwParamに格納されている
-		{
-		case ESC_KEY:	// プログラムを終了するキー
-			// Windowsにこのプログラムを終了するように伝える
-			PostQuitMessage(0);
-			return 0;
-		default:
-			break;
-		}
-	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+	return (game->messageHandler(hWnd, msg, wParam, lParam));
 }
 
 // ウィンドウを作成

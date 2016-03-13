@@ -10,6 +10,7 @@ Graphics::Graphics()
 	fullscreen = false;
 	width = GAME_WIDTH;    // 幅と高さはinitialize()で置き換えられる
 	height = GAME_HEIGHT;
+	backColor = SETCOLOR_ARGB(255, 0, 0, 128); // dark blue
 }
 
 //=============================================================================
@@ -126,9 +127,6 @@ void Graphics::initD3Dpp()
 HRESULT Graphics::showBackbuffer()
 {
 	result = E_FAIL;    // 失敗をデフォルトとし、成功時に置き換え
-	// （この関数は、後のバージョンでは移動します）
-	// バックバッファをライムグリーンにクリア
-	device3d->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 255, 0), 0.0f, 0);
 
 	// バックバッファを画面に表示
 	result = device3d->Present(NULL, NULL, NULL, NULL);
@@ -161,4 +159,29 @@ bool Graphics::isAdapterCompatible()
 			return true;
 	}
 	return false;
+}
+
+//=============================================================================
+// デバイスが消失していないかをチェック
+//=============================================================================
+HRESULT Graphics::getDeviceState()
+{
+	result = E_FAIL;	// 失敗をデフォルトとし、成功時に置き換え
+	if (device3d == NULL)
+		return result;
+	result = device3d->TestCooperativeLevel();
+	return result;
+}
+
+
+//=============================================================================
+// グラフィックスデバイスをリセット
+//=============================================================================
+HRESULT Graphics::reset()
+{
+	result = E_FAIL;	// 失敗をデフォルトとし、成功時に置き換え
+	initD3Dpp();		// D3Dプレゼンテーションパラメータを初期化
+	// グラフィックスデバイスのリセットを試みる
+	result = device3d->Reset(&d3dpp);
+	return result;
 }

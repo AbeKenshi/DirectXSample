@@ -33,6 +33,7 @@ private:
 	bool        fullscreen;
 	int         width;
 	int         height;
+	COLOR_ARGB  backColor;      // 背景色
 	// （エンジンの使用時に内部的にのみ使用します。
 	// 内部にはユーザーが使用するものはありません。）
 
@@ -69,6 +70,31 @@ public:
 	// 設定された場合、trueを戻します。
 	// 対応しているモードが見つからなかった場合、falseを戻します。
 	bool isAdapterCompatible();
+
+	// デバイスが消失していないかをチェック
+	HRESULT getDeviceState();
+
+	// グラフィックスデバイスをリセット
+	HRESULT reset();
+
+	// バックバッファをクリアして、DirectXのBeginScene()を呼び出す
+	HRESULT beginScene() {
+		result = E_FAIL;
+		if (device3d == NULL)
+			return result;
+		// バックバッファをbackColorでクリアする
+		device3d->Clear(0, NULL, D3DCLEAR_TARGET, backColor, 1.0F, 0);
+		result = device3d->BeginScene();	// 描画のためのシーンを開始する
+		return result;
+	}
+
+	// DirectXのEndScene()を呼び出す
+	HRESULT endScene() {
+		result = E_FAIL;
+		if (device3d)
+			result = device3d->EndScene();
+		return result;
+	}
 };
 
 #endif
