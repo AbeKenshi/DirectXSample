@@ -24,6 +24,7 @@ HWND hwnd = NULL;
 //		nCmdShow：ウィンドウをどのように表示するかを指定
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+
 	// デバッグビルドの場合、メモリリークをチェック
 	#if defined(DEBUG) | defined(_DEBUG)
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -133,6 +134,7 @@ bool CreateMainWindow(HWND &hwnd, HINSTANCE hInstance, int nCmdShow)
 		(HMENU)NULL,			// メニューなし
 		hInstance,				// アプリケーションインスタンスへのハンドル
 		(LPVOID)NULL);			// ウィンドウパラメータなし
+
 	// ウィンドウの作成でエラーが発生した場合
 	if (!hwnd)
 		return false;

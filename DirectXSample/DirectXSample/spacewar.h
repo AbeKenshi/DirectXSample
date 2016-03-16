@@ -3,14 +3,22 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include "game.h"
+#include "textureManager.h"
+#include "image.h"
 
 //=============================================================================
-// Spacewarは新しく作成するクラス。Gameクラスを継承する
+// このクラスはゲームエンジンのコア
 //=============================================================================
 class Spacewar : public Game
 {
 private:
-	// 変数
+	// ゲームアイテム
+	TextureManager nebulaTexture;	// 星雲（nebula）のテクスチャ
+	TextureManager planetTexture;	// 惑星（planet）のテクスチャ
+	TextureManager shipTexture;		// 宇宙船のテクスチャ
+	Image planet;					// 惑星（planet）の画像
+	Image nebula;					// 星雲（nebula）の画像
+	Image ship;						// 宇宙船の画像
 
 public:
 	// コンストラクタ
