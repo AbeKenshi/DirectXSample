@@ -132,16 +132,22 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="gameError.h" />
     <ClInclude Include="graphics.h" />
+    <ClInclude Include="entity.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="planet.h" />
+    <ClInclude Include="ship.h" />
     <ClInclude Include="spacewar.h" />
     <ClInclude Include="textureManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="planet.cpp" />
+    <ClCompile Include="ship.cpp" />
     <ClCompile Include="spacewar.cpp" />
     <ClCompile Include="textureManager.cpp" />
     <ClCompile Include="winmain.cpp" />

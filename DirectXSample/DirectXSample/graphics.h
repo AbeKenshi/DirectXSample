@@ -21,6 +21,9 @@
 #define SETCOLOR_ARGB(a,r,g,b) \
     ((COLOR_ARGB)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 
+// ベクトル型
+#define VECTOR2 D3DXVECTOR2
+
 namespace graphicsNS
 {
 	// 共通で使用する色
@@ -210,6 +213,24 @@ public:
 	void spriteEnd()
 	{
 		sprite->End();
+	}
+
+	// ベクトルVの長さをfloatとして戻します。
+	static float Veector2Length(const VECTOR2 *v)
+	{
+		return D3DXVec2Length(v);
+	}
+
+	// ベクトルV1とベクトルV2の内積をfloatとして戻します。
+	static float Vector2Dot(const VECTOR2 *v1, const VECTOR2 *v2)
+	{
+		return D3DXVec2Dot(v1, v2);
+	}
+
+	// ベクトルVを単位ベクトルに変換します。
+	static void Vector2Normalize(VECTOR2 *v)
+	{
+		D3DXVec2Normalize(v, v);
 	}
 };
 

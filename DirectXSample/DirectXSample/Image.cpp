@@ -68,7 +68,7 @@ bool Image::initialize(Graphics *g, int width, int height, int ncols,
 		spriteData.rect.left = (currentFrame % cols) * spriteData.width;
 		// ‰E’[+1
 		spriteData.rect.right = spriteData.rect.left + spriteData.width;
-		spriteData.rect.top = (currentFrame % cols) * spriteData.height;
+		spriteData.rect.top = (currentFrame / cols) * spriteData.height;
 		// ‰º’[+1
 		spriteData.rect.bottom = spriteData.rect.top + spriteData.height;
 	}

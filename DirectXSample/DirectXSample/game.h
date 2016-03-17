@@ -60,6 +60,9 @@ public:
 	
 	// 消失したグラフィックスデバイスを処理
 	virtual void handleLostGraphicsDevice();
+
+	// Set display mode (fullscreen, window or toggle)
+	void setDisplayMode(graphicsNS::DISPLAY_MODE mode = graphicsNS::TOGGLE);
 	
 	// Graphicsへのポインタを戻す
 	Graphics* getGraphics() { return graphics; }

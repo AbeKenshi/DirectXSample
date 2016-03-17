@@ -157,6 +157,16 @@ void Game::renderGame()
 }
 
 //=============================================================================
+// Toggle window or fullscreen mode
+//=============================================================================
+void Game::setDisplayMode(graphicsNS::DISPLAY_MODE mode)
+{
+	releaseAll();                   // free all user created surfaces
+	graphics->changeDisplayMode(mode);
+	resetAll();                     // recreate surfaces
+}
+
+//=============================================================================
 // WinMain内のメインのメッセージループで繰り返し呼び出される
 //=============================================================================
 void Game::run(HWND hwnd)
@@ -193,6 +203,16 @@ void Game::run(HWND hwnd)
 		input->vibrateControllers(frameTime);		// コントローラーの振動を処理
 	}
 	renderGame();									// すべてのゲームアイテムを描画
+	input->readControllers();       // read state of controllers
+
+									// if Alt+Enter toggle fullscreen/window
+	if (input->iskeyDown(ALT_KEY) && input->wasKeyPressed(ENTER_KEY))
+		setDisplayMode(graphicsNS::TOGGLE); // toggle fullscreen/window
+
+											// if Esc key, set window mode
+	if (input->iskeyDown(ESC_KEY))
+		setDisplayMode(graphicsNS::WINDOW); // set window mode
+
 	// 入力をクリア
 	// すべてのキーチェックが行われた後これを呼び出す
 	input->clear(inputNS::KEYS_PRESSED);

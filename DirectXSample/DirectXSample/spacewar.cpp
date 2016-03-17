@@ -22,39 +22,41 @@ Spacewar::~Spacewar()
 //=============================================================================
 void Spacewar::initialize(HWND hwnd)
 {
-	Game::initialize(hwnd); // GameErrorをスロー
-	// 星雲（nebula）のテクスチャ
-	if (!nebulaTexture.initialize(graphics, NEBULA_IMAGE))
-		throw(GameError(gameErrorNS::FATAL_ERROR,
-			"Error initializing nebula texture"));
-	// 惑星（planet）のテクスチャ
-	if (!planetTexture.initialize(graphics, PLANET_IMAGE))
-		throw(GameError(gameErrorNS::FATAL_ERROR,
-			"Error initializing planet texture"));
-	// 宇宙船テクスチャ
-	if (!shipTexture.initialize(graphics, SHIP_IMAGE))
-		throw(GameError(gameErrorNS::FATAL_ERROR,
-			"Error initializing ship texture"));
+	Game::initialize(hwnd); // throws GameError
 
-	// 星雲（nebula）
+							// nebula texture
+	if (!nebulaTexture.initialize(graphics, NEBULA_IMAGE))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing nebula texture"));
+
+	// main game textures
+	if (!gameTextures.initialize(graphics, TEXTURES_IMAGE))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing game textures"));
+
+	// nebula image
 	if (!nebula.initialize(graphics, 0, 0, 0, &nebulaTexture))
 		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing nebula"));
-	// 惑星（planet）
-	if (!planet.initialize(graphics, 0, 0, 0, &planetTexture))
-		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing planet"));
-	// 宇宙船
-	if (!ship.initialize(graphics, SHIP_WIDTH, SHIP_HEIGHT, SHIP_COLS, &shipTexture))
-		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing ship"));
 
-	// 画面の中央に惑星を配置
-	planet.setX(GAME_WIDTH * 0.5f - planet.getWidth() * 0.5f);
-	planet.setY(GAME_HEIGHT * 0.5f - planet.getHeight() * 0.5f);
-	ship.setX(GAME_WIDTH / 4);	// 惑星の左上から出発
-	ship.setY(GAME_HEIGHT / 4);
-	ship.setFrames(SHIP_START_FRAME, SHIP_END_FRAME);	// アニメーションのフレーム
-	ship.setCurrentFrame(SHIP_START_FRAME);				// 開始フレーム
-	ship.setFrameDelay(SHIP_ANIMATION_DELAY);
-	ship.setDegrees(45.0f);								// 宇宙船の角度
+	// planet
+	if (!planet.initialize(this, planetNS::WIDTH, planetNS::HEIGHT, 2, &gameTextures))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing planet"));
+
+	// ship
+	if (!ship1.initialize(this, shipNS::WIDTH, shipNS::HEIGHT, shipNS::TEXTURE_COLS, &gameTextures))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing ship1"));
+	ship1.setFrames(shipNS::SHIP1_START_FRAME, shipNS::SHIP1_END_FRAME);
+	ship1.setCurrentFrame(shipNS::SHIP1_START_FRAME);
+	ship1.setX(GAME_WIDTH / 4);
+	ship1.setY(GAME_HEIGHT / 4);
+	ship1.setVelocity(VECTOR2(shipNS::SPEED, -shipNS::SPEED)); // VECTOR2(X, Y)
+															   // ship2
+	if (!ship2.initialize(this, shipNS::WIDTH, shipNS::HEIGHT, shipNS::TEXTURE_COLS, &gameTextures))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing ship2"));
+	ship2.setFrames(shipNS::SHIP2_START_FRAME, shipNS::SHIP2_END_FRAME);
+	ship2.setCurrentFrame(shipNS::SHIP2_START_FRAME);
+	ship2.setX(GAME_WIDTH - GAME_WIDTH / 4);
+	ship2.setY(GAME_HEIGHT / 4);
+	ship2.setVelocity(VECTOR2(-shipNS::SPEED, -shipNS::SPEED)); // VECTOR2(X, Y)
+
 	return;
 }
 
@@ -63,17 +65,9 @@ void Spacewar::initialize(HWND hwnd)
 //=============================================================================
 void Spacewar::update()
 {
-	ship.update(frameTime);
-	// 宇宙船を回転
-	ship.setDegrees(ship.getDegrees() + frameTime * ROTATION_RATE);
-	// 宇宙船を縮小
-	ship.setScale(ship.getScale() - frameTime * SCALE_RATE);
-	ship.setX(ship.getX() + frameTime * SHIP_SPEED);	// 宇宙船を右に移動
-	if (ship.getX() > GAME_WIDTH)						// 画面の右にはみ出す場合
-	{
-		ship.setX((float)-ship.getWidth());				// 画面の左に配置
-		ship.setScale(SHIP_SCALE);						// 開始サイズに設定
-	}
+	planet.update(frameTime);
+	ship1.update(frameTime);
+	ship2.update(frameTime);
 }
 
 //=============================================================================
@@ -86,7 +80,32 @@ void Spacewar::ai()
 // 衝突を処理
 //=============================================================================
 void Spacewar::collisions()
-{}
+{
+	VECTOR2 collisionVector;
+	// 宇宙船と惑星の衝突の場合
+	if (ship1.collidesWith(planet, collisionVector))
+	{
+		// 惑星から跳ね返る
+		ship1.bounce(collisionVector, planet);
+		ship1.damage(PLANET);
+	}
+	if (ship2.collidesWith(planet, collisionVector))
+	{
+		// 惑星から跳ね返る
+		ship2.bounce(collisionVector, planet);
+		ship2.damage(PLANET);
+	}
+	// 宇宙船同士の衝突の場合
+	if (ship1.collidesWith(ship2, collisionVector))
+	{
+		// 宇宙船から跳ね返る
+		ship1.bounce(collisionVector, ship2);
+		ship1.damage(SHIP);
+		// ship2のcollisionVectorの方向を変更する
+		ship2.bounce(collisionVector*-1, ship1);
+		ship2.damage(SHIP);
+	}
+}
 
 //=============================================================================
 // ゲームアイテムをレンダー
@@ -96,7 +115,8 @@ void Spacewar::render()
 	graphics->spriteBegin();	// スプライトの描画を開始
 	nebula.draw();				// オリオン星雲をシーンに追加
 	planet.draw();				// 惑星をシーンに追加
-	ship.draw();
+	ship1.draw();
+	ship2.draw();
 	graphics->spriteEnd();		// スプライトの描画を終了
 }
 
@@ -107,8 +127,8 @@ void Spacewar::render()
 //=============================================================================
 void Spacewar::releaseAll()
 {
-	planetTexture.onLostDevice();
 	nebulaTexture.onLostDevice();
+	gameTextures.onLostDevice();
 	Game::releaseAll();
 	return;
 }
@@ -119,8 +139,8 @@ void Spacewar::releaseAll()
 //=============================================================================
 void Spacewar::resetAll()
 {
+	gameTextures.onResetDevice();
 	nebulaTexture.onResetDevice();
-	planetTexture.onResetDevice();
 	Game::resetAll();
 	return;
 }
