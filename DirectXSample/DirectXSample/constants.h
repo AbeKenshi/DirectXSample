@@ -35,7 +35,7 @@ const bool FULLSCREEN = false;              // windowed or fullscreen
 const UINT GAME_WIDTH = 640;               // width of game in pixels
 const UINT GAME_HEIGHT = 480;               // height of game in pixels
 
-											// game
+// game
 const double PI = 3.14159265;
 const float FRAME_RATE = 200.0f;                // the target frame rate (frames/sec)
 const float MIN_FRAME_RATE = 10.0f;             // the minimum frame rate
@@ -44,18 +44,35 @@ const float MAX_FRAME_TIME = 1.0f / MIN_FRAME_RATE; // maximum time used in calc
 const float GRAVITY = 6.67428e-11f;             // gravitational constant
 const float MASS_PLANET = 1.0e14f;
 const float MASS_SHIP = 5.0f;
+const float FULL_HEALTH = 100;
+const float SPACE_SCALE = 2.0f;                 // scale factor of space image
+const int   SPACE_WIDTH = (int)(640 * SPACE_SCALE);  // width of scaled space image
+const int   SPACE_HEIGHT = (int)(480 * SPACE_SCALE); // height of scaled space image
+const int   PLANET_SIZE = 128;                  // size of planet image
+const int   PLANET_FRAME = 1;                   // frame of planet
+const UINT  MOON_SIZE = 64;                     // size of moon images
+const UINT  MOON1_FRAME = 12;                   // frame of moon1
+
+// graphic images
+const char DASHBOARD_TEXTURES[] = "pictures\\dashboard.png";
 
 // graphic images
 const char NEBULA_IMAGE[] = "pictures\\orion.jpg";     // photo source NASA/courtesy of nasaimages.org 
 const char TEXTURES_IMAGE[] = "pictures\\textures.png";  // game textures
 const char FONT_IMAGE[] = "pictures\\CKfont.png";
+const char SPACE_IMAGE[] = "pictures\\space.jpg";   // photo source NASA/courtesy of nasaimages.org 
+const char TEXTURES1_IMAGE[] = "pictures\\textures1.png";  // game textures
+const char OCEAN_IMAGE[] = "pictures\\ocean.jpg";   // background
+const char PLANE_IMAGE[] = "pictures\\planeTextures.png"; // game textures
+const char REFLECTION_IMAGE[] = "pictures\\reflection.png"; // game textures
+const char MENU_IMAGE[] = "pictures\\menu.png";     // menu texture
 
-														 // key mappings
-														 // In this game simple constants are used for key mappings. If variables were used
-														 // it would be possible to save and restore key mappings from a data file.
-														 // key mappings
-														 // In this game simple constants are used for key mappings. If variables were used
-														 // it would be possible to save and restore key mappings from a data file.
+// key mappings
+// In this game simple constants are used for key mappings. If variables were used
+// it would be possible to save and restore key mappings from a data file.
+// key mappings
+// In this game simple constants are used for key mappings. If variables were used
+// it would be possible to save and restore key mappings from a data file.
 const UCHAR CONSOLE_KEY = VK_OEM_3;         // ~キー（日本の場合は@キー）
 const UCHAR ESC_KEY = VK_ESCAPE;   // escape key
 const UCHAR ALT_KEY = VK_MENU;     // Alt key
@@ -68,10 +85,10 @@ const UCHAR SHIP2_LEFT_KEY = VK_LEFT; // left arrow
 const UCHAR SHIP2_RIGHT_KEY = VK_RIGHT; // right arrow
 const UCHAR SHIP2_FORWARD_KEY = VK_UP;   // up arrow
 const UCHAR SHIP2_FIRE_KEY = VK_DOWN; // down arrow
-
-
-										 // weapon types
-enum WEAPON { TORPEDO, SHIP, PLANET };
+const UCHAR LEFT_KEY = VK_LEFT;
+const UCHAR RIGHT_KEY = VK_RIGHT;
+const UCHAR UP_KEY = VK_UP;
+const UCHAR DOWN_KEY = VK_DOWN;
 
 // WAVE_BANKは、.xwbファイルの場所
 const char WAVE_BANK[] = "audio\\Win\\WavesExample1.xwb";
@@ -84,6 +101,8 @@ const char BEEP2[] = "beep2";
 const char BEEP3[] = "beep3";
 const char BEEP4[] = "beep4";
 const char HIT[] = "hit";
+const char ENGINE1[] = "engine1";
 
-
+// weapon types
+enum WEAPON { TORPEDO, SHIP, PLANET };
 #endif

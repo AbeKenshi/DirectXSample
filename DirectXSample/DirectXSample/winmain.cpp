@@ -8,6 +8,11 @@
 #include "textdemo.h"
 //#include "threeCs.h"
 #include "threeCsDX.h"
+#include "shadow.h"
+#include "reflection.h"
+#include "messagedemo.h"
+#include "inputDialogDemo.h"
+#include "dashboardDemo.h"
 
 // 関数プロトタイプ
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
@@ -19,7 +24,12 @@ bool AnotherInstance();
 //Spacewar *game = NULL;
 //TextDemo *game = NULL;
 //ThreeCs *game = NULL;
-ThreeCsDX *game = NULL;
+//ThreeCsDX *game = NULL;
+//Shadow *game = NULL;
+//Reflection *game = NULL;
+//MessageDemo *game = NULL;
+//InputDialogDemo *game = NULL;
+DashboardDemo *game = NULL;
 
 HWND hwnd = NULL;
 
@@ -43,7 +53,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 //	game = new Spacewar;
 //	game = new TextDemo;
 //	game = new ThreeCs;
-	game = new ThreeCsDX;
+//	game = new ThreeCsDX;
+//	game = new Shadow;
+//	game = new Reflection;
+//	game = new MessageDemo;
+//	game = new InputDialogDemo;
+	game = new DashboardDemo;
 
 	// 複数のインスタンスの生成を防ぐ
 	if (AnotherInstance())

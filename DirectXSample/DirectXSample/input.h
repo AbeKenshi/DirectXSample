@@ -106,7 +106,7 @@ public:
 	void keyIn(WPARAM wParam);
 	
 	// 指定された仮想キーが押されている場合はtrue、それ以外の場合はfalseを戻す
-	bool iskeyDown(UCHAR vkey) const;
+	bool isKeyDown(UCHAR vkey) const;
 	
 	// 直近のフレームにおいて、指定の仮想キーが押されたことがある場合、trueを戻します。
 	// キーの押し下げの状態は、各フレームの終了時に消去されます。

@@ -6,7 +6,11 @@
 // コンストラクタ
 //=============================================================================
 Spacewar::Spacewar()
-{}
+{
+	menuOn = true;
+	countDownOn = false;
+	roundOver = false;
+}
 
 //=============================================================================
 // デストラクタ
@@ -24,13 +28,49 @@ void Spacewar::initialize(HWND hwnd)
 {
 	Game::initialize(hwnd); // throws GameError
 
-							// nebula texture
+	// initialize DirectX fonts
+	fontBig.initialize(graphics, spacewarNS::FONT_BIG_SIZE, false, false, spacewarNS::FONT);
+	fontBig.setFontColor(spacewarNS::FONT_COLOR);
+
+	// menu texture
+	if (!menuTexture.initialize(graphics, MENU_IMAGE))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing menu texture"));
+
+	// 星雲（space）のテクスチャ
+	if (!spaceTexture.initialize(graphics, SPACE_IMAGE))
+		throw(GameError(gameErrorNS::FATAL_ERROR,
+			"Error initializing space texture"));
+
+	// game textures
+	if (!textures1.initialize(graphics, TEXTURES1_IMAGE))
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing game textures"));
+
+
+	// nebula texture
 	if (!nebulaTexture.initialize(graphics, NEBULA_IMAGE))
 		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing nebula texture"));
 
 	// main game textures
 	if (!gameTextures.initialize(graphics, TEXTURES_IMAGE))
 		throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing game textures"));
+
+	// 星空の画像
+	if (!space.initialize(graphics, 0, 0, 0, &spaceTexture))
+		throw(GameError(gameErrorNS::FATAL_ERROR,
+			"Error initializing space"));
+	space.setScale((float)SPACE_SCALE);
+
+	// moon images
+	for (int i = 0; i<4; i++)
+	{
+		if (!moons[i].initialize(graphics, MOON_SIZE, MOON_SIZE, 4, &textures1))
+			throw(GameError(gameErrorNS::FATAL_ERROR, "Error initializing moons"));
+		moons[i].setFrames(MOON1_FRAME + i, MOON1_FRAME + i);
+		moons[i].setCurrentFrame(MOON1_FRAME + i);
+		// Start moons in center
+		moons[i].setX(GAME_WIDTH / 2 - MOON_SIZE / 2);
+		moons[i].setY(GAME_HEIGHT / 2 - MOON_SIZE / 2);
+	}
 
 	// nebula image
 	if (!nebula.initialize(graphics, 0, 0, 0, &nebulaTexture))
@@ -65,9 +105,43 @@ void Spacewar::initialize(HWND hwnd)
 //=============================================================================
 void Spacewar::update()
 {
-	planet.update(frameTime);
+	// エンティティを更新
 	ship1.update(frameTime);
 	ship2.update(frameTime);
+	// 惑星をX方向に動かす
+	planet.setX(planet.getX() - frameTime * ship1.getVelocity().x);
+	// 惑星をY方向に動かす
+	planet.setY(planet.getY() - frameTime * ship1.getVelocity().y);
+	planet.update(frameTime);
+	for (int i = 0; i < 4; ++i)	// 衛星を動かす
+	{
+		// スクロールの速さを、衛星ごとに20%遅くする
+		moons[i].setX(moons[i].getX() -
+			frameTime * ship1.getVelocity().x * 0.2f * (4 - i));
+		moons[i].setY(moons[i].getY() -
+			frameTime * ship1.getVelocity().y * 0.2f * (4 - i));
+	}
+	// 星空を宇宙船と反対のX方向に移動
+	space.setX(space.getX() - frameTime * ship1.getVelocity().x);
+	// 星空を宇宙船と反対のY方向に移動
+	space.setY(space.getY() - frameTime * ship1.getVelocity().y);
+
+	// 星空画像を端で折り返す
+	// 星空の左端 > 画面の左端の場合
+	if (space.getX() > 0)
+		// 星空画像をSPACE_WIDTH分だけ左に動かす
+		space.setX(space.getX() - SPACE_WIDTH);
+	// 星空画像が画面から外れて左にある場合
+	if (space.getX() < -SPACE_WIDTH)
+		// 星空画像をSPACE_WIDTH分だけ右に動かす
+		space.setX(space.getX() + SPACE_WIDTH);
+	// 星空の上端 > 画面の上端の場合
+	if (space.getY() > 0)
+		// 星空画像をSPACE_HEIGHT分だけ上に動かす
+		space.setY(space.getY() - SPACE_HEIGHT);
+	// 星空画像が画面から外れて上にある場合
+	if (space.getY() < -SPACE_HEIGHT)
+		space.setY(space.getY() + SPACE_HEIGHT);
 }
 
 //=============================================================================
@@ -112,11 +186,49 @@ void Spacewar::collisions()
 //=============================================================================
 void Spacewar::render()
 {
+	float x = space.getX();
+	float y = space.getY();
 	graphics->spriteBegin();	// スプライトの描画を開始
-	nebula.draw();				// オリオン星雲をシーンに追加
+	// 星空画像を端で折り返す
+	space.draw();				// 現在の位置で描画
+	// 星空画像の右端が見える場合
+	if (space.getX() < -SPACE_WIDTH + (int)GAME_WIDTH)
+	{
+		space.setX(space.getX() + SPACE_WIDTH);		// 左端に戻る
+		space.draw();								// 再度、描画する
+	}
+	// 星空画像の下端が見える場合
+	if (space.getY() < -SPACE_HEIGHT + (int)GAME_HEIGHT)
+	{
+		space.setY(space.getY() + SPACE_HEIGHT);	// 上端に戻る
+		space.draw();								// 再度、描画する
+		space.setX(x);								// X位置を復元
+		// 星空画像の右端が見える場合
+		// 左端に戻る
+		if (space.getX() < -SPACE_WIDTH + (int)GAME_WIDTH)
+			space.draw();							// 再度、描画する
+	}
+	space.setY(y);									// Y位置を復元
+	//nebula.draw();				// オリオン星雲をシーンに追加
+	for (int i = 3; i >= 0; --i)
+	{
+		moons[i].draw();			// 衛星の描画
+	}
 	planet.draw();				// 惑星をシーンに追加
+	
+	// 宇宙船を描画
 	ship1.draw();
 	ship2.draw();
+
+	if (menuOn)
+		menu.draw();
+	if (countDownOn)
+	{
+		_snprintf_s(buffer, spacewarNS::BUF_SIZE, "%d",
+			(int)(ceil(countDownTimer)));
+		fontBig.print(buffer, spacewarNS::COUNT_DOWN_X,
+			spacewarNS::COUNT_DOWN_Y);
+	}
 	graphics->spriteEnd();		// スプライトの描画を終了
 }
 

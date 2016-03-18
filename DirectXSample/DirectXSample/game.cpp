@@ -112,6 +112,10 @@ void Game::initialize(HWND hw)
 	console->initialize(graphics, input);	// コンソールを準備
 	console->print("---Console---");
 
+	// messageDialogを初期化
+	messageDialog = new MessageDialog();
+	messageDialog->initialize(graphics, input, hwnd);
+
 	// DirectXフォントを初期化
 	if (dxFont.initialize(graphics, gameNS::POINT_SIZE, false, false, gameNS::FONT) == false)
 		throw(GameError(gameErrorNS::FATAL_ERROR, "Failed to initialize DirectX font."));
@@ -162,7 +166,8 @@ void Game::renderGame()
 		}
 		graphics->spriteEnd();		// スプライトの描画を終了
 		console->draw();			// コンソールは、ゲームの前面に表示されるようにここで描画
-									// レンダリングを終了
+		messageDialog->draw();		// ダイアログを前面に描画
+		// レンダリングを終了
 		graphics->endScene();
 	}
 	handleLostGraphicsDevice();
@@ -256,15 +261,15 @@ void Game::run(HWND hwnd)
 	}
 	consoleCommand();				// ユーザーが入力したコンソールコマンドを取得
 
-	input->readControllers();						// コントローラーの状態を読み取る
-	
+	input->readControllers();		// コントローラーの状態を読み取る
+	messageDialog->update();		// ボタンクリックをチェック
 	audio->run();					// サウンドエンジンの周期的タスクを実行
 									// if Alt+Enter toggle fullscreen/window
-	if (input->iskeyDown(ALT_KEY) && input->wasKeyPressed(ENTER_KEY))
+	if (input->isKeyDown(ALT_KEY) && input->wasKeyPressed(ENTER_KEY))
 		setDisplayMode(graphicsNS::TOGGLE); // toggle fullscreen/window
 
 											// if Esc key, set window mode
-	if (input->iskeyDown(ESC_KEY))
+	if (input->isKeyDown(ESC_KEY))
 		setDisplayMode(graphicsNS::WINDOW); // set window mode
 
 											// 入力をクリア
@@ -279,6 +284,7 @@ void Game::run(HWND hwnd)
 //=============================================================================
 void Game::releaseAll()
 {
+	SAFE_ON_LOST_DEVICE(messageDialog);
 	SAFE_ON_LOST_DEVICE(console);
 	dxFont.onLostDevice();
 	return;
@@ -291,6 +297,7 @@ void Game::resetAll()
 {
 	dxFont.onResetDevice();
 	SAFE_ON_RESET_DEVICE(console);
+	SAFE_ON_RESET_DEVICE(messageDialog);
 	return;
 }
 
@@ -305,6 +312,7 @@ void Game::deleteAll()
 	SAFE_DELETE(input);
 	SAFE_DELETE(audio);
 	SAFE_DELETE(console);
+	SAFE_DELETE(messageDialog);
 	initialized = false;
 }
 

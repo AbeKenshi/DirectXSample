@@ -123,7 +123,7 @@ void Input::keyIn(WPARAM wParam)
 //=============================================================================
 // 指定された仮想キーが押されている場合はtrue、それ以外の場合はfalseを戻す
 //=============================================================================
-bool Input::iskeyDown(UCHAR vkey) const
+bool Input::isKeyDown(UCHAR vkey) const
 {
 	if (vkey < inputNS::KEYS_ARRAY_LEN)
 		return keysDown[vkey];
