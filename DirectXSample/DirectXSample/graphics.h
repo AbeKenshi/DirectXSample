@@ -11,10 +11,14 @@
 #include "gameError.h"
 
 // DirectXポインタ型
+#define LP_TEXTURE  LPDIRECT3DTEXTURE9
+#define LP_SPRITE   LPD3DXSPRITE
 #define LP_3DDEVICE LPDIRECT3DDEVICE9
 #define LP_3D       LPDIRECT3D9
-#define LP_SPRITE LPD3DXSPRITE
-#define LP_TEXTURE  LPDIRECT3DTEXTURE9
+#define VECTOR2     D3DXVECTOR2
+#define LP_VERTEXBUFFER LPDIRECT3DVERTEXBUFFER9
+#define LP_DXFONT   LPD3DXFONT
+#define LP_VERTEXBUFFER LPDIRECT3DVERTEXBUFFER9
 
 // 色の定義
 #define COLOR_ARGB DWORD
@@ -58,6 +62,18 @@ namespace graphicsNS
 
 	enum DISPLAY_MODE { TOGGLE, FULLSCREEN, WINDOW };
 }
+
+struct VertexC              // Vertex with Color
+{
+	float x, y, z;          // vertex location
+	float rhw;              // reciprocal homogeneous W (set to 1)
+	unsigned long color;    // vertex color
+};
+
+// Flexible Vertex Format Codes
+// D3DFVF_XYZRHW = The verticies are transformed
+// D3DFVF_DIFFUSE = The verticies contain diffuse color data 
+#define D3DFVF_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE)
 
 // SpriteData：スプライトを描画するGraphics::drawSpriteが必要とするプロパティ
 struct SpriteData
@@ -126,6 +142,18 @@ public:
 	// HRESULTを戻す
 	HRESULT loadTexture(const char *filename, COLOR_ARGB transcolor,
 		UINT &width, UINT &height, LP_TEXTURE &texture);
+
+	// 頂点バッファを作成
+	// 実行前: verts[]に頂点データが格納されている
+	//      size = verts[]のサイズ
+	// 実行後：成功した場合、&vertexBufferがバッファを指す
+	HRESULT createVertexBuffer(VertexC verts[], UINT size, LP_VERTEXBUFFER &vertexBuffer);
+	
+	// 三角形ファンを使って、アルファ透過性を持つ四角形を表示
+	// 実行前：createVertexBufferを使ってvertexBufferを作成し、
+	//		   四角形を時計回りの順序で定義する4つの頂点を格納しておく
+	// 実行後：四角形が描画される
+	bool    drawQuad(LP_VERTEXBUFFER vertexBuffer);
 
 	// オフスクリーンバックバッファを画面に表示
 	HRESULT showBackbuffer();
@@ -232,6 +260,17 @@ public:
 	{
 		D3DXVec2Normalize(v, v);
 	}
+
+	// テクスチャをシステムメモリに読み込む（システムメモリはロック可能）
+	// ピクセルデータへの直接アクセスを可能にします。
+	// Texturemanagerクラスを使って、表示するテクスチャを読み込みます。
+	// 実行前：filenameは、テクスチャファイルの名前
+	//		   transcolorは、透明として扱う色
+	// 実行後：widthとheight = テクスチャの寸法
+	//		   textureは、テクスチャを指す
+	// HRESULTを戻し、TextureData構造体にデータを格納する
+	HRESULT loadTextureSystemMem(const char *filename, COLOR_ARGB
+		transcolor, UINT &width, UINT &height, LP_TEXTURE &texture);
 };
 
 #endif

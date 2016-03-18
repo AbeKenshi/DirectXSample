@@ -48,13 +48,26 @@ const float MASS_SHIP = 5.0f;
 // graphic images
 const char NEBULA_IMAGE[] = "pictures\\orion.jpg";     // photo source NASA/courtesy of nasaimages.org 
 const char TEXTURES_IMAGE[] = "pictures\\textures.png";  // game textures
+const char FONT_IMAGE[] = "pictures\\CKfont.png";
 
 														 // key mappings
 														 // In this game simple constants are used for key mappings. If variables were used
 														 // it would be possible to save and restore key mappings from a data file.
-const UCHAR ESC_KEY = VK_ESCAPE;       // escape key
-const UCHAR ALT_KEY = VK_MENU;         // Alt key
-const UCHAR ENTER_KEY = VK_RETURN;       // Enter key
+														 // key mappings
+														 // In this game simple constants are used for key mappings. If variables were used
+														 // it would be possible to save and restore key mappings from a data file.
+const UCHAR CONSOLE_KEY = VK_OEM_3;         // ~キー（日本の場合は@キー）
+const UCHAR ESC_KEY = VK_ESCAPE;   // escape key
+const UCHAR ALT_KEY = VK_MENU;     // Alt key
+const UCHAR ENTER_KEY = VK_RETURN;   // Enter key
+const UCHAR SHIP1_LEFT_KEY = 'A';
+const UCHAR SHIP1_RIGHT_KEY = 'D';
+const UCHAR SHIP1_FORWARD_KEY = 'W';
+const UCHAR SHIP1_FIRE_KEY = 'S';
+const UCHAR SHIP2_LEFT_KEY = VK_LEFT; // left arrow
+const UCHAR SHIP2_RIGHT_KEY = VK_RIGHT; // right arrow
+const UCHAR SHIP2_FORWARD_KEY = VK_UP;   // up arrow
+const UCHAR SHIP2_FIRE_KEY = VK_DOWN; // down arrow
 
 
 										 // weapon types

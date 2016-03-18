@@ -9,6 +9,15 @@
 #include "constants.h"
 #include "gameError.h"
 #include "audio.h"
+#include "textDX.h"
+#include "console.h"
+
+namespace gameNS
+{
+	const char FONT[] = "Courier New";  // フォント
+	const int POINT_SIZE = 14;          // ポイントサイズ
+	const COLOR_ARGB FONT_COLOR = SETCOLOR_ARGB(255, 255, 255, 255);    // 白
+}
 
 class Game
 {
@@ -17,6 +26,7 @@ protected:
 	Graphics *graphics;			// Graphicsへのポインタ
 	Input *input;				// Inputへのポインタ
 	Audio *audio;				// Audioへのポインタ
+	Console *console;			// Consoleへのポインタ
 	HWND hwnd;					// ウィンドウハンドル
 	HRESULT hr;					// 標準の戻り型
 	LARGE_INTEGER timeStart;	// パフォーマンスカウンターの開始値
@@ -24,10 +34,12 @@ protected:
 	LARGE_INTEGER timerFreq;	// パフォーマンスカウンターの周波数
 	float frameTime;			// 最後のフレームに要した時間
 	float fps;					// フレームレート（1秒あたりのフレーム数)
+	TextDX dxFont;				// フレームレート用のDirectXフォント
+	bool fpsOn;					// trueの場合フレームレートを表示
 	DWORD sleepTime;			// フレーム間でスリープする時間（ミリ秒）
 	bool paused;				// ゲームが一時停止されている場合、true
 	bool initialized;
-
+	std::string  command;       // コンソールからのコマンド
 public:
 	// コンストラクタ
 	Game();
@@ -56,6 +68,9 @@ public:
 	
 	// 予約されていたメモリをすべて削除
 	virtual void deleteAll();
+
+	// コンソールコマンドを処理
+	virtual void consoleCommand();
 	
 	// ゲームアイテムをレンダー
 	virtual void renderGame();
@@ -72,11 +87,11 @@ public:
 	// Inputへのポインタを戻す
 	Input* getInput() { return input; }
 
-	// Audioへのポインタを戻す
-	Audio* getAudio() { return audio; }
-	
 	// ゲームを終了
 	void exitGame() { PostMessage(hwnd, WM_DESTROY, 0, 0); }
+
+	// Audioへのポインタを戻す
+	Audio* getAudio() { return audio; }
 	
 	// 純粋仮想関数の宣言
 	// これらの関数は、Gameを継承するクラス内で記述する必要があります。

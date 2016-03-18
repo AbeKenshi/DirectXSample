@@ -9,6 +9,10 @@ Game::Game()
 	// input->initialize()を呼び出して処理
 	paused = false;			// ゲームは一時停止中でない
 	graphics = NULL;
+	audio = NULL;
+	console = NULL;
+	fps = 100;
+	fpsOn = false;			// デフォルトではフレームレートを表示しない
 	initialized = false;
 }
 
@@ -18,7 +22,7 @@ Game::Game()
 Game::~Game()
 {
 	deleteAll();		// 予約されていたメモリをすべて解放
-	ShowCursor(true);	// カーソルをひょじ
+	ShowCursor(true);	// カーソルを表示
 }
 
 //=============================================================================
@@ -103,6 +107,17 @@ void Game::initialize(HWND hw)
 	input->initialize(hwnd, false);			// GameErrorをスロー
 	// サウンドシステムを初期化
 	audio = new Audio();
+	// コンソールを初期化
+	console = new Console();
+	console->initialize(graphics, input);	// コンソールを準備
+	console->print("---Console---");
+
+	// DirectXフォントを初期化
+	if (dxFont.initialize(graphics, gameNS::POINT_SIZE, false, false, gameNS::FONT) == false)
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Failed to initialize DirectX font."));
+
+	dxFont.setFontColor(gameNS::FONT_COLOR);
+
 	// サウンドファイルが定義されている場合
 	if (*WAVE_BANK != '\0' && *SOUND_BANK != '\0')
 	{
@@ -123,6 +138,36 @@ void Game::initialize(HWND hw)
 			"Error initializing high resolution timer"));
 	QueryPerformanceCounter(&timeStart);	// 開始時間を取得
 	initialized = true;
+}
+
+//=============================================================================
+// ゲームアイテムをレンダー
+//=============================================================================
+void Game::renderGame()
+{
+	const int BUF_SIZE = 20;
+	static char buffer[BUF_SIZE];
+
+	// レンダリングを開始
+	if (SUCCEEDED(graphics->beginScene()))
+	{
+		// renderは、継承したクラス側で記述する必要のある純粋仮想関数です。
+		render();					// 派生クラスのrenderを呼び出す
+		graphics->spriteBegin();	// スプライトの描画を開始
+		if (fpsOn)					// フレームレートの表示が要求されている場合
+		{
+			// fpsをCstringに変換
+			_snprintf_s(buffer, BUF_SIZE, "fps %d", (int)fps);
+			dxFont.print(buffer, GAME_WIDTH - 100, GAME_HEIGHT - 28);
+		}
+		graphics->spriteEnd();		// スプライトの描画を終了
+		console->draw();			// コンソールは、ゲームの前面に表示されるようにここで描画
+									// レンダリングを終了
+		graphics->endScene();
+	}
+	handleLostGraphicsDevice();
+	// バックバッファを画面に表示
+	graphics->showBackbuffer();
 }
 
 //=============================================================================
@@ -152,24 +197,6 @@ void Game::handleLostGraphicsDevice()
 		else
 			return;					// 他のデバイスエラー
 	}
-}
-
-//=============================================================================
-// ゲームアイテムをレンダー
-//=============================================================================
-void Game::renderGame()
-{
-	// レンダリングを開始
-	if (SUCCEEDED(graphics->beginScene()))
-	{
-		// renderは、継承したクラス側で記述する必要のある純粋仮想関数です。
-		render();	// 派生クラスのrenderを呼び出す
-		// レンダリングを終了
-		graphics->endScene();
-	}
-	handleLostGraphicsDevice();
-	// バックバッファを画面に表示
-	graphics->showBackbuffer();
 }
 
 //=============================================================================
@@ -208,7 +235,7 @@ void Game::run(HWND hwnd)
 	if (frameTime > MAX_FRAME_TIME)					// フレームレートが非常に遅い場合
 		frameTime = MAX_FRAME_TIME;					// 最大frameTimeを制限
 	timeStart = timeEnd;
-	input->readControllers();						// コントローラーの状態を読み取る
+
 	// update()、ai()、collisions()は純粋仮想関数です。
 	// これらの関数は、Gameを継承しているクラス側で記述する必要があります。
 	if (!paused)									// 一時停止中でない場合
@@ -219,8 +246,19 @@ void Game::run(HWND hwnd)
 		input->vibrateControllers(frameTime);		// コントローラーの振動を処理
 	}
 	renderGame();									// すべてのゲームアイテムを描画
-	input->readControllers();       // read state of controllers
+	
+	// コンソールキーをチェック
+	if (input->wasKeyPressed(CONSOLE_KEY))
+	{
+		console->showHide();
+		// コンソールが表示されている間、ゲームを一時停止
+		paused = console->getVisible();
+	}
+	consoleCommand();				// ユーザーが入力したコンソールコマンドを取得
 
+	input->readControllers();						// コントローラーの状態を読み取る
+	
+	audio->run();					// サウンドエンジンの周期的タスクを実行
 									// if Alt+Enter toggle fullscreen/window
 	if (input->iskeyDown(ALT_KEY) && input->wasKeyPressed(ENTER_KEY))
 		setDisplayMode(graphicsNS::TOGGLE); // toggle fullscreen/window
@@ -229,34 +267,69 @@ void Game::run(HWND hwnd)
 	if (input->iskeyDown(ESC_KEY))
 		setDisplayMode(graphicsNS::WINDOW); // set window mode
 
-	// 入力をクリア
-	// すべてのキーチェックが行われた後これを呼び出す
+											// 入力をクリア
+											// すべてのキーチェックが行われた後これを呼び出す
 	input->clear(inputNS::KEYS_PRESSED);
-	
-	audio->run();					// サウンドエンジンの周期的タスクを実行
 }
 
 //=============================================================================
-// The graphics device was lost.
-// Release all reserved video memory so graphics device may be reset.
+// グラフィックスデバイスが消失した場合
+// グラフィックスデバイスをリセット可能にするため
+// 予約されていたビデオメモリをすべて解放
 //=============================================================================
 void Game::releaseAll()
-{}
+{
+	SAFE_ON_LOST_DEVICE(console);
+	dxFont.onLostDevice();
+	return;
+}
 
 //=============================================================================
-// Recreate all surfaces and reset all entities.
+// すべてのサーフェイスを再作成し、すべてのエンティティをリセット
 //=============================================================================
 void Game::resetAll()
-{}
+{
+	dxFont.onResetDevice();
+	SAFE_ON_RESET_DEVICE(console);
+	return;
+}
 
 //=============================================================================
-// Delete all reserved memory
+// 予約されていたメモリをすべて削除
 //=============================================================================
 void Game::deleteAll()
 {
-	releaseAll();               // call onLostDevice() for every graphics item
+	// すべてのグラフィックスアイテムについてonLostDevice()を呼び出す
+	releaseAll();
 	SAFE_DELETE(graphics);
 	SAFE_DELETE(input);
 	SAFE_DELETE(audio);
+	SAFE_DELETE(console);
 	initialized = false;
+}
+
+//=============================================================================
+// コンソールコマンドを処理
+// 新しいコンソールコマンドを追加する場合は、
+// この関数を派生クラスでオーバーライドする
+//=============================================================================
+void Game::consoleCommand()
+{
+	command = console->getCommand();	// コンソールからのコマンドを取得
+	if (command == "")					// コマンドがない場合
+		return;
+	if (command == "help")				// 「help」コマンドの場合
+	{
+		console->print("Console Commands:");
+		console->print("fps - toggle display of frames per second");
+		return;
+	}
+	if (command == "fps")
+	{
+		fpsOn = !fpsOn;					// フレームレートの表示を切り替える
+		if (fpsOn)
+			console->print("fps On");
+		else
+			console->print("fps Off");
+	}
 }

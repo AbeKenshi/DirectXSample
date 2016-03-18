@@ -253,7 +253,7 @@ public:
 	// 現在のSpriteData.rectを使って、テクスチャを選択
 	// 実行前：spriteBegin()を呼び出す
 	// 実行後：spriteEnd()を呼び出す
-	virtual void draw(SpriteData sd, COLOR_ARGB color);
+	virtual void draw(SpriteData sd, COLOR_ARGB color = graphicsNS::WHITE);
 
 	virtual void update(float frameTime);
 };

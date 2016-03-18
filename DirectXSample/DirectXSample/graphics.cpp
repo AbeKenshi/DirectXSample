@@ -95,6 +95,12 @@ void Graphics::initialize(HWND hw, int w, int h, bool full)
 	if (FAILED(result))
 		throw(GameError(gameErrorNS::FATAL_ERROR,
 			"Error creating Direct3D sprite"));
+
+	// プリミティブのアルファブレンド用の構成
+	device3d->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	device3d->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	device3d->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
 }
 
 //=============================================================================
@@ -123,6 +129,61 @@ void Graphics::initD3Dpp()
 			"Error initializing D3D presentation parameters"));
 
 	}
+}
+//=============================================================================
+// 頂点バッファを作成
+// 実行前: verts[]に頂点データが格納されている
+//      size = verts[]のサイズ
+// 実行後：成功した場合、&vertexBufferがバッファを指す
+//=============================================================================
+HRESULT Graphics::createVertexBuffer(VertexC verts[], UINT size, LP_VERTEXBUFFER &vertexBuffer)
+{
+	// 標準のWindows戻り値
+    HRESULT result = E_FAIL;
+
+	// 頂点バッファを作成
+    result = device3d->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, D3DFVF_VERTEX,
+                                            D3DPOOL_DEFAULT, &vertexBuffer, NULL);
+    if(FAILED(result))
+        return result;
+
+    void *ptr;
+	// データが転送されてくる前に、バッファをロックする必要がある
+    result = vertexBuffer->Lock(0, size, (void**)&ptr, 0);
+    if(FAILED(result))
+        return result;
+    memcpy(ptr, verts, size);   // 頂点データをバッファにコピー
+    vertexBuffer->Unlock();     // バッファのロックを解除
+
+    return result;
+}
+
+//=============================================================================
+// 三角形ファンを使って、アルファ透過性を持つ四角形を表示
+// 実行前：createVertexBufferを使ってvertexBufferを作成し、
+//		   四角形を時計回りの順序で定義する4つの頂点を格納しておく
+// 実行後：四角形が描画される
+//=============================================================================
+bool Graphics::drawQuad(LP_VERTEXBUFFER vertexBuffer)
+{
+
+	HRESULT result = E_FAIL;    // 標準のWindows戻り値
+
+	if (vertexBuffer == NULL)
+		return false;
+	// アルファブレンドを有効化
+	device3d->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+	device3d->SetStreamSource(0, vertexBuffer, 0, sizeof(VertexC));
+	device3d->SetFVF(D3DFVF_VERTEX);
+	result = device3d->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, 2);
+
+	// アルファブレンドを無効化
+	device3d->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+
+	if (FAILED(result))
+		return false;
+
+	return true;
 }
 
 //=============================================================================
@@ -188,6 +249,11 @@ HRESULT Graphics::reset()
 	sprite->OnLostDevice();
 	// グラフィックスデバイスのリセットを試みる
 	result = device3d->Reset(&d3dpp);
+	// プリミティブのアルファブレンド用の構成
+	// Configure for alpha blend of primitives
+	device3d->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	device3d->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	device3d->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	sprite->OnResetDevice();
 	return result;
 }
@@ -366,4 +432,60 @@ void Graphics::changeDisplayMode(graphicsNS::DISPLAY_MODE mode)
 			GAME_HEIGHT + (GAME_HEIGHT - clientRect.bottom), // Bottom
 			TRUE);                                       // Repaint the window
 	}
+}
+
+//=============================================================================
+// テクスチャをシステムメモリに読み込む（システムメモリはロック可能）
+// ピクセルデータへの直接アクセスを可能にします。
+// Texturemanagerクラスを使って、表示するテクスチャを読み込みます。
+// 実行前：filenameは、テクスチャファイルの名前
+//		   transcolorは、透明として扱う色
+// 実行後：widthとheight = テクスチャの寸法
+//		   textureは、テクスチャを指す
+// HRESULTを戻し、TextureData構造体にデータを格納する
+//=============================================================================
+HRESULT Graphics::loadTextureSystemMem(const char *filename, COLOR_ARGB
+	transcolor, UINT &width, UINT &height, LP_TEXTURE &texture)
+{
+	// ビットマップファイル情報を読み取るための構造体
+	D3DXIMAGE_INFO info;
+	result = E_FAIL;        // 標準のWindows戻り値
+
+	try {
+		if (filename == NULL)
+		{
+			texture = NULL;
+			return D3DERR_INVALIDCALL;
+		}
+
+		// 幅と高さをビットマップファイルから取得
+		result = D3DXGetImageInfoFromFile(filename, &info);
+		if (result != D3D_OK)
+			return result;
+		width = info.Width;
+		height = info.Height;
+
+		// ビットマップ画像ファイルを読み込んで、新しいテクスチャを作成
+		result = D3DXCreateTextureFromFileEx(
+			device3d,           // 3Dデバイス
+			filename,           // ビットマップファイルの名前
+			info.Width,         // ビットマップ画像の幅
+			info.Height,        // ビットマップ画像の高さ
+			1,                  // ミップマップのレベル（チェーンなしの場合は1）
+			0,                  // 使用方法（Usage）
+			D3DFMT_UNKNOWN,     // サーフェイスフォーマット（デフォルト）
+			D3DPOOL_SYSTEMMEM,  // システムメモリはロック可能
+			D3DX_DEFAULT,       // 画像フィルタ
+			D3DX_DEFAULT,       // ミップフィルタ
+			transcolor,         // 透明色の色キー
+			&info,              // ビットマップファイル情報（読み込んだファイルから）
+			NULL,               // カラーパレット
+			&texture);          // 目的のテクスチャ
+
+	}
+	catch (...)
+	{
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Error in Graphics::loadTexture"));
+	}
+	return result;
 }

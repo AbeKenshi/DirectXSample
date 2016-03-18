@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="audio.h" />
+    <ClInclude Include="console.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="gameError.h" />
@@ -139,10 +140,16 @@
     <ClInclude Include="planet.h" />
     <ClInclude Include="ship.h" />
     <ClInclude Include="spacewar.h" />
+    <ClInclude Include="text.h" />
+    <ClInclude Include="textdemo.h" />
+    <ClInclude Include="textDX.h" />
     <ClInclude Include="textureManager.h" />
+    <ClInclude Include="threeCs.h" />
+    <ClInclude Include="threeCsDX.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="graphics.cpp" />
@@ -151,7 +158,12 @@
     <ClCompile Include="planet.cpp" />
     <ClCompile Include="ship.cpp" />
     <ClCompile Include="spacewar.cpp" />
+    <ClCompile Include="text.cpp" />
+    <ClCompile Include="textdemo.cpp" />
+    <ClCompile Include="textDX.cpp" />
     <ClCompile Include="textureManager.cpp" />
+    <ClCompile Include="threeCs.cpp" />
+    <ClCompile Include="threeCsDX.cpp" />
     <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
