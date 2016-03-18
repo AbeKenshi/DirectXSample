@@ -60,4 +60,17 @@ const UCHAR ENTER_KEY = VK_RETURN;       // Enter key
 										 // weapon types
 enum WEAPON { TORPEDO, SHIP, PLANET };
 
+// WAVE_BANKは、.xwbファイルの場所
+const char WAVE_BANK[] = "audio\\Win\\WavesExample1.xwb";
+// audio.cppが必要とするオーディオファイル
+// WAVE_BANKは.xwbファイルの場所
+const char SOUND_BANK[] = "audio\\Win\\SoundsExample1.xsb";
+// サウンドキュー
+const char BEEP1[] = "beep1";
+const char BEEP2[] = "beep2";
+const char BEEP3[] = "beep3";
+const char BEEP4[] = "beep4";
+const char HIT[] = "hit";
+
+
 #endif

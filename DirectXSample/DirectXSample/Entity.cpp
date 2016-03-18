@@ -35,6 +35,7 @@ bool Entity::initialize(Game *gamePtr, int width, int height, int ncols,
 	TextureManager *textureM)
 {
 	input = gamePtr->getInput();                // 入力システム
+	audio = gamePtr->getAudio();				// オーディオシステム
 	return(Image::initialize(gamePtr->getGraphics(), width, height, ncols, textureM));
 }
 

@@ -101,6 +101,22 @@ void Game::initialize(HWND hw)
 	graphics->initialize(hwnd, GAME_WIDTH, GAME_HEIGHT, FULLSCREEN);
 	// 入力を初期化、マウスはキャプチャしない
 	input->initialize(hwnd, false);			// GameErrorをスロー
+	// サウンドシステムを初期化
+	audio = new Audio();
+	// サウンドファイルが定義されている場合
+	if (*WAVE_BANK != '\0' && *SOUND_BANK != '\0')
+	{
+		if (FAILED(hr = audio->initialize()))
+		{
+			if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+				throw(GameError(gameErrorNS::FATAL_ERROR,
+					"Failed to initialize sound system" \
+					"because media file not found."));
+			else
+				throw(GameError(gameErrorNS::FATAL_ERROR,
+					"Failed to initialize sound system."));
+		}
+	}
 	// 高分解能タイマーの準備を試みる
 	if (QueryPerformanceFrequency(&timerFreq) == false)
 		throw(GameError(gameErrorNS::FATAL_ERROR,
@@ -216,6 +232,8 @@ void Game::run(HWND hwnd)
 	// 入力をクリア
 	// すべてのキーチェックが行われた後これを呼び出す
 	input->clear(inputNS::KEYS_PRESSED);
+	
+	audio->run();					// サウンドエンジンの周期的タスクを実行
 }
 
 //=============================================================================
@@ -239,5 +257,6 @@ void Game::deleteAll()
 	releaseAll();               // call onLostDevice() for every graphics item
 	SAFE_DELETE(graphics);
 	SAFE_DELETE(input);
+	SAFE_DELETE(audio);
 	initialized = false;
 }

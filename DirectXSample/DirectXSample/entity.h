@@ -5,6 +5,7 @@
 #include "image.h"
 #include "input.h"
 #include "game.h"
+#include "audio.h"
 
 namespace entityNS
 {
@@ -39,7 +40,8 @@ protected:
 	float rr;									// Radius squared variable
 	float force;								// Force of gravity
 	float gravity;								// 
-	Input   *input;								// 入力システムへのポインタ
+	Input *input;								// 入力システムへのポインタ
+	Audio *audio;								// オーディオシステムへのポインタ
 	HRESULT hr;									// 標準の戻り値
 	bool active;								// エンティティの現在の状態。アクティブなエンティティのみが衝突を起こします。
 	bool rotatedBoxReady;						// ROTATED_BOXの衝突判定のとき、true

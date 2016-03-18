@@ -71,11 +71,13 @@ void Ship::update(float frameTime)
 		// 画面右端に配置
 		spriteData.x = GAME_WIDTH - shipNS::WIDTH*getScale();
 		velocity.x = -velocity.x;               // X方向を反転
+		audio->playCue(BEEP1);					// サウンドを再生
 	}
 	else if (spriteData.x < 0)                  // 画面左端に衝突した場合
 	{
 		spriteData.x = 0;                       // 画面左端に配置
 		velocity.x = -velocity.x;               // X方向を反転
+		audio->playCue(BEEP2);					// サウンドを再生
 	}
 	// 画面下端に衝突した場合
 	if (spriteData.y > GAME_HEIGHT - shipNS::HEIGHT*getScale())
@@ -83,11 +85,13 @@ void Ship::update(float frameTime)
 		// 画面下端に配置
 		spriteData.y = GAME_HEIGHT - shipNS::HEIGHT*getScale();
 		velocity.y = -velocity.y;               // Y方向を反転
+		audio->playCue(BEEP3);					// サウンドを再生
 	}
 	else if (spriteData.y < 0)                  // 画面上端に衝突した場合
 	{
 		spriteData.y = 0;                       // 画面上端に配置
 		velocity.y = -velocity.y;               // Y方向を反転
+		audio->playCue(BEEP4);					// サウンドを再生
 	}
 	if (shieldOn)
 	{

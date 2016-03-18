@@ -8,6 +8,7 @@
 #include "input.h"
 #include "constants.h"
 #include "gameError.h"
+#include "audio.h"
 
 class Game
 {
@@ -15,6 +16,7 @@ protected:
 	// 共通のゲームプロパティ
 	Graphics *graphics;			// Graphicsへのポインタ
 	Input *input;				// Inputへのポインタ
+	Audio *audio;				// Audioへのポインタ
 	HWND hwnd;					// ウィンドウハンドル
 	HRESULT hr;					// 標準の戻り型
 	LARGE_INTEGER timeStart;	// パフォーマンスカウンターの開始値
@@ -69,6 +71,9 @@ public:
 	
 	// Inputへのポインタを戻す
 	Input* getInput() { return input; }
+
+	// Audioへのポインタを戻す
+	Audio* getAudio() { return audio; }
 	
 	// ゲームを終了
 	void exitGame() { PostMessage(hwnd, WM_DESTROY, 0, 0); }
