@@ -98,10 +98,10 @@ const UCHAR UP_KEY = VK_UP;
 const UCHAR DOWN_KEY = VK_DOWN;
 
 // WAVE_BANKは、.xwbファイルの場所
-const char WAVE_BANK[] = "audio\\Win\\WaveBank.xwb";
+const char WAVE_BANK[] = "audioTest\\Win\\WavesExample1.xwb";
 // audio.cppが必要とするオーディオファイル
 // WAVE_BANKは.xwbファイルの場所
-const char SOUND_BANK[] = "audio\\Win\\SoundBank.xsb";
+const char SOUND_BANK[] = "audioTest\\Win\\SoundsExample1.xsb";
 // サウンドキュー
 const char BEEP1[] = "beep1";
 const char BEEP2[] = "beep2";

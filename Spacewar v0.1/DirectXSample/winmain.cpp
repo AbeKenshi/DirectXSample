@@ -5,17 +5,6 @@
 #include <stdlib.h>			// メモリリークを検出するため
 #include <crtdbg.h>			// メモリリークを検出するため
 #include "spacewar.h"
-#include "textdemo.h"
-//#include "threeCs.h"
-#include "threeCsDX.h"
-#include "shadow.h"
-#include "reflection.h"
-#include "messagedemo.h"
-#include "inputDialogDemo.h"
-#include "dashboardDemo.h"
-#include "flowerPower.h"
-#include "checkers.h"
-#include "elevations.h"
 
 // 関数プロトタイプ
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
@@ -25,18 +14,6 @@ bool AnotherInstance();
 
 // Gameポインタ
 Spacewar *game = NULL;
-//TextDemo *game = NULL;
-//ThreeCs *game = NULL;
-//ThreeCsDX *game = NULL;
-//Shadow *game = NULL;
-//Reflection *game = NULL;
-//MessageDemo *game = NULL;
-//InputDialogDemo *game = NULL;
-//DashboardDemo *game = NULL;
-//FlowerPower *game = NULL;
-//Checkers *game = NULL;
-//Elevations *game = NULL;
-
 HWND hwnd = NULL;
 
 // Windowsアプリケーションの開始点
@@ -57,17 +34,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 
 	// Create the game, sets up message handler
 	game = new Spacewar;
-//	game = new TextDemo;
-//	game = new ThreeCs;
-//	game = new ThreeCsDX;
-//	game = new Shadow;
-//	game = new Reflection;
-//	game = new MessageDemo;
-//	game = new InputDialogDemo;
-//	game = new DashboardDemo;
-//	game = new FlowerPower;
-//	game = new Checkers;
-//	game = new Elevations;
 
 	// 複数のインスタンスの生成を防ぐ
 	if (AnotherInstance())
