@@ -129,10 +129,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="audio.h" />
+    <ClInclude Include="butterfly.h" />
+    <ClInclude Include="checkers.h" />
     <ClInclude Include="console.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="dashboard.h" />
     <ClInclude Include="dashboardDemo.h" />
+    <ClInclude Include="elevations.h" />
+    <ClInclude Include="flowerPower.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="gameError.h" />
     <ClInclude Include="graphics.h" />
@@ -158,10 +162,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
+    <ClCompile Include="butterfly.cpp" />
+    <ClCompile Include="checkers.cpp" />
     <ClCompile Include="console.cpp" />
     <ClCompile Include="dashboard.cpp" />
     <ClCompile Include="dashboardDemo.cpp" />
+    <ClCompile Include="elevations.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="flowerPower.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="Image.cpp" />

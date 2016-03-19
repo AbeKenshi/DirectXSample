@@ -13,6 +13,9 @@
 #include "messagedemo.h"
 #include "inputDialogDemo.h"
 #include "dashboardDemo.h"
+#include "flowerPower.h"
+#include "checkers.h"
+#include "elevations.h"
 
 // 関数プロトタイプ
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
@@ -29,7 +32,10 @@ bool AnotherInstance();
 //Reflection *game = NULL;
 //MessageDemo *game = NULL;
 //InputDialogDemo *game = NULL;
-DashboardDemo *game = NULL;
+//DashboardDemo *game = NULL;
+//FlowerPower *game = NULL;
+//Checkers *game = NULL;
+Elevations *game = NULL;
 
 HWND hwnd = NULL;
 
@@ -58,7 +64,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 //	game = new Reflection;
 //	game = new MessageDemo;
 //	game = new InputDialogDemo;
-	game = new DashboardDemo;
+//	game = new DashboardDemo;
+//	game = new FlowerPower;
+//	game = new Checkers;
+	game = new Elevations;
 
 	// 複数のインスタンスの生成を防ぐ
 	if (AnotherInstance())

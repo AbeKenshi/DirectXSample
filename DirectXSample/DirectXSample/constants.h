@@ -37,7 +37,7 @@ const UINT GAME_HEIGHT = 480;               // height of game in pixels
 
 // game
 const double PI = 3.14159265;
-const float FRAME_RATE = 200.0f;                // the target frame rate (frames/sec)
+const float FRAME_RATE = 400.0f;                // the target frame rate (frames/sec)
 const float MIN_FRAME_RATE = 10.0f;             // the minimum frame rate
 const float MIN_FRAME_TIME = 1.0f / FRAME_RATE;   // minimum desired time for 1 frame
 const float MAX_FRAME_TIME = 1.0f / MIN_FRAME_RATE; // maximum time used in calculations
@@ -52,6 +52,8 @@ const int   PLANET_SIZE = 128;                  // size of planet image
 const int   PLANET_FRAME = 1;                   // frame of planet
 const UINT  MOON_SIZE = 64;                     // size of moon images
 const UINT  MOON1_FRAME = 12;                   // frame of moon1
+const UINT  TILE_MAP_WIDTH = 100;           // width of tile map in tiles
+const UINT  TILE_MAP_HEIGHT = 20;           // height of tile map in tiles
 
 // graphic images
 const char DASHBOARD_TEXTURES[] = "pictures\\dashboard.png";
@@ -66,7 +68,12 @@ const char OCEAN_IMAGE[] = "pictures\\ocean.jpg";   // background
 const char PLANE_IMAGE[] = "pictures\\planeTextures.png"; // game textures
 const char REFLECTION_IMAGE[] = "pictures\\reflection.png"; // game textures
 const char MENU_IMAGE[] = "pictures\\menu.png";     // menu texture
-
+const char TILE_TEXTURES[] = "pictures\\tiles.png";         // tiles
+const char OBJECT_TEXTURES[] = "pictures\\flowerTextures.png";    // objects
+const char CHECKERS_IMAGE[] = "pictures\\checkers.png"; // game textures
+const char ELEVATION1_IMAGE[] = "pictures\\elevationsTextures1.png"; // game textures
+//const char ELEVATION3_IMAGE[] = "pictures\\elevationsTextures3.png"; // game textures
+const char ELEVATION2_IMAGE[] = "pictures\\elevationsTextures2.png"; // game textures
 // key mappings
 // In this game simple constants are used for key mappings. If variables were used
 // it would be possible to save and restore key mappings from a data file.
@@ -91,10 +98,10 @@ const UCHAR UP_KEY = VK_UP;
 const UCHAR DOWN_KEY = VK_DOWN;
 
 // WAVE_BANKは、.xwbファイルの場所
-const char WAVE_BANK[] = "audio\\Win\\WavesExample1.xwb";
+const char WAVE_BANK[] = "audio\\Win\\WaveBank.xwb";
 // audio.cppが必要とするオーディオファイル
 // WAVE_BANKは.xwbファイルの場所
-const char SOUND_BANK[] = "audio\\Win\\SoundsExample1.xsb";
+const char SOUND_BANK[] = "audio\\Win\\SoundBank.xsb";
 // サウンドキュー
 const char BEEP1[] = "beep1";
 const char BEEP2[] = "beep2";
