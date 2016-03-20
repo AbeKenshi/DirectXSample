@@ -20,7 +20,7 @@ namespace shipNS
 	// 宇宙船1のアニメーションフレームは0、1、2、3
 	const int   SHIP1_END_FRAME = 3;
 	const int   SHIP2_START_FRAME = 8;			// 宇宙船2はフレーム8から開始
-	// 宇宙船1のアニメーションフレームは8、9、10、
+	// 宇宙船2のアニメーションフレームは8、9、10、
 	const int   SHIP2_END_FRAME = 11;
 	const float SHIP_ANIMATION_DELAY = 0.2f;    // フレーム間の時間
 	const int   EXPLOSION_START_FRAME = 32;		// 爆発の開始フレーム
