@@ -32,9 +32,10 @@ const float FULL_HEALTH = 100;
 const char NEBULA_IMAGE[] = "pictures\\orion.jpg";     // photo source NASA/courtesy of nasaimages.org 
 const char TEXTURES_IMAGE[] = "pictures\\textures.png";  // game textures
 const char MENU_IMAGE[] = "pictures\\menu.png";      // menu texture
+const char DASHBOARD_TEXTURES[] = "pictures\\dashboard.png";
 
-													 // audio files required by audio.cpp
-													 // WAVE_BANK must be location of .xwb file.
+// audio files required by audio.cpp
+// WAVE_BANK must be location of .xwb file.
 const char WAVE_BANK[] = "audio\\Win\\waveBank.xwb";
 // SOUND_BANK must be location of .xsb file.
 const char SOUND_BANK[] = "audio\\Win\\soundBank.xsb";
